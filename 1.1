@@ -1,0 +1,71 @@
+#include <iostream>
+#include <vector>
+#include <random>
+#include <chrono>
+
+// Функция пузырьковой сортировки
+void bubbleSort(std::vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                std::swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}
+
+// Функция генерации случайного списка
+std::vector<int> generateRandomArray(int size) {
+    std::vector<int> arr(size);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(1, 100000);
+    
+    for (int i = 0; i < size; i++) {
+        arr[i] = dis(gen);
+    }
+    return arr;
+}
+
+// Функция для проверки отсортированности
+bool isSorted(const std::vector<int>& arr) {
+    for (size_t i = 0; i < arr.size() - 1; i++) {
+        if (arr[i] > arr[i + 1]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int main() {
+    // Размеры списков для тестирования
+    std::vector<int> sizes = {1000, 5000, 10000};
+    
+    std::cout << "Тестирование пузырьковой сортировки\n";
+    std::cout << "===================================\n\n";
+    
+    for (int size : sizes) {
+        // Генерация случайного списка
+        std::vector<int> arr = generateRandomArray(size);
+        
+        // Замер времени выполнения
+        auto start = std::chrono::high_resolution_clock::now();
+        bubbleSort(arr);
+        auto end = std::chrono::high_resolution_clock::now();
+        
+        std::chrono::duration<double> duration = end - start;
+        
+        // Проверка корректности сортировки
+        bool sorted = isSorted(arr);
+        
+        // Вывод результатов
+        std::cout << "Размер списка: " << size << std::endl;
+        std::cout << "  Время выполнения: " << duration.count() << " сек" << std::endl;
+        std::cout << "  Корректность сортировки: " << (sorted ? "✓" : "✗") << std::endl;
+        std::cout << "  Сложность: O(n²) - квадратичная" << std::endl;
+        std::cout << std::endl;
+    }
+    
+    return 0;
+}
