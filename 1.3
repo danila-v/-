@@ -1,0 +1,80 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <algorithm>
+using namespace std;
+
+// Простой поиск 
+int simpleSearch(vector<int>& arr, int target) {
+    for (int i = 0; i < arr.size(); i++) {
+        if (arr[i] == target) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Быстрый поиск 
+int fastSearch(vector<int>& arr, int target) {
+    int left = 0;
+    int right = arr.size() - 1;
+    
+    while (left <= right) {
+        int mid = (left + right) / 2;
+        
+        if (arr[mid] == target) {
+            return mid;
+        }
+        else if (arr[mid] < target) {
+            left = mid + 1;
+        }
+        else {
+            right = mid - 1;
+        }
+    }
+    return -1;
+}
+
+int main() {
+    vector<int> sizes = {1000, 10000, 100000};
+    vector<double> simpleTimes;
+    vector<double> fastTimes;
+    
+    cout << "СРАВНЕНИЕ ПОИСКА: ПРОСТОЙ vs БЫСТРЫЙ" << endl;
+    cout << "====================================" << endl << endl;
+    
+    for (int size : sizes) {
+        // Создаем случайный список
+        vector<int> arr;
+        for (int i = 0; i < size; i++) {
+            arr.push_back(rand() % 100000 + 1);
+        }
+        
+        sort(arr.begin(), arr.end());
+        
+        int target = arr[rand() % size];
+        
+        // Измеряем время простого поиска
+        clock_t start = clock();
+        int simpleResult = simpleSearch(arr, target);
+        clock_t end = clock();
+        double simpleTime = double(end - start) / CLOCKS_PER_SEC;
+        simpleTimes.push_back(simpleTime);
+        
+        // Измеряем время быстрого поиска
+        start = clock();
+        int fastResult = fastSearch(arr, target);
+        end = clock();
+        double fastTime = double(end - start) / CLOCKS_PER_SEC;
+        fastTimes.push_back(fastTime);
+        
+        cout << "Размер списка: " << size << endl;
+        cout << "Ищем число: " << target << endl;
+        cout << "Простой поиск: " << simpleTime << " сек (найден на позиции " << simpleResult << ")" << endl;
+        cout << "Быстрый поиск: " << fastTime << " сек (найден на позиции " << fastResult << ")" << endl;
+        cout << "Быстрый поиск быстрее в " << simpleTime / fastTime << " раз!" << endl;
+        cout << "------------------------------------" << endl;
+    }
+    
+    return 0;
+}
