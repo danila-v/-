@@ -1,80 +1,92 @@
 #include <iostream>
 #include <vector>
-#include <ctime>
-#include <algorithm>
-using namespace std;
+#include <cstdlib> 
+#include <ctime>  
+#include <chrono>  
+#include <algorithm> 
+#include <string>
 
-// Простой поиск 
-int simpleSearch(vector<int>& arr, int target) {
-    for (int i = 0; i < arr.size(); i++) {
+int linear_search(const std::vector<int>& arr, int target) {
+    for (size_t i = 0; i < arr.size(); ++i) {
         if (arr[i] == target) {
-            return i;
+            return static_cast<int>(i);
         }
     }
     return -1;
 }
-
-// Быстрый поиск 
-int fastSearch(vector<int>& arr, int target) {
+int binary_search(const std::vector<int>& arr, int target) {
     int left = 0;
-    int right = arr.size() - 1;
+    int right = static_cast<int>(arr.size()) - 1;
     
     while (left <= right) {
-        int mid = (left + right) / 2;
+        int mid = left + (right - left) / 2;
         
         if (arr[mid] == target) {
             return mid;
-        }
-        else if (arr[mid] < target) {
+        } else if (arr[mid] < target) {
             left = mid + 1;
-        }
-        else {
+        } else {
             right = mid - 1;
         }
     }
     return -1;
 }
 
-int main() {
-    vector<int> sizes = {1000, 10000, 100000};
-    vector<double> simpleTimes;
-    vector<double> fastTimes;
-    
-    cout << "СРАВНЕНИЕ ПОИСКА: ПРОСТОЙ vs БЫСТРЫЙ" << endl;
-    cout << "====================================" << endl << endl;
-    
-    for (int size : sizes) {
-        // Создаем случайный список
-        vector<int> arr;
-        for (int i = 0; i < size; i++) {
-            arr.push_back(rand() % 100000 + 1);
-        }
-        
-        sort(arr.begin(), arr.end());
-        
-        int target = arr[rand() % size];
-        
-        // Измеряем время простого поиска
-        clock_t start = clock();
-        int simpleResult = simpleSearch(arr, target);
-        clock_t end = clock();
-        double simpleTime = double(end - start) / CLOCKS_PER_SEC;
-        simpleTimes.push_back(simpleTime);
-        
-        // Измеряем время быстрого поиска
-        start = clock();
-        int fastResult = fastSearch(arr, target);
-        end = clock();
-        double fastTime = double(end - start) / CLOCKS_PER_SEC;
-        fastTimes.push_back(fastTime);
-        
-        cout << "Размер списка: " << size << endl;
-        cout << "Ищем число: " << target << endl;
-        cout << "Простой поиск: " << simpleTime << " сек (найден на позиции " << simpleResult << ")" << endl;
-        cout << "Быстрый поиск: " << fastTime << " сек (найден на позиции " << fastResult << ")" << endl;
-        cout << "Быстрый поиск быстрее в " << simpleTime / fastTime << " раз!" << endl;
-        cout << "------------------------------------" << endl;
+std::vector<int> generate_sorted_list(int n, int min_val = 0, int max_val = 100000) {
+    std::vector<int> arr(n);
+    for (int i = 0; i < n; ++i) {
+        arr[i] = min_val + rand() % (max_val - min_val + 1);
     }
+    std::sort(arr.begin(), arr.end());
+    return arr;
+}
+
+void draw_bar(const std::string& label, double value, double max_value, int width = 40) {
+    int bar_len = static_cast<int>((value / max_value) * width);
+    if (bar_len == 0 && value > 0) bar_len = 1; 
+    std::cout << label << " (" << value << " сек): "
+              << std::string(bar_len, '#') << "\n";
+}
+
+int main() {
+    srand(static_cast<unsigned int>(time(nullptr)));
     
+    std::vector<int> sizes = {1000, 10000, 100000}; 
+    
+    std::cout << "=== СРАВНЕНИЕ ЛИНЕЙНОГО И БИНАРНОГО ПОИСКА ===\n\n";
+    
+    for (int n : sizes) {
+        std::cout << "--- Размер массива: " << n << " ---\n";
+        
+        std::vector<int> arr = generate_sorted_list(n);
+        
+        int target = arr[rand() % n];
+        
+        auto start_linear = std::chrono::high_resolution_clock::now();
+        int index_linear = linear_search(arr, target);
+        auto end_linear = std::chrono::high_resolution_clock::now();
+        double time_linear = std::chrono::duration<double>(end_linear - start_linear).count();
+        
+        auto start_binary = std::chrono::high_resolution_clock::now();
+        int index_binary = binary_search(arr, target);
+        auto end_binary = std::chrono::high_resolution_clock::now();
+        double time_binary = std::chrono::duration<double>(end_binary - start_binary).count();
+        
+        std::cout << "Искомый элемент: " << target << "\n";
+        std::cout << "Линейный поиск: индекс = " << index_linear 
+                  << ", время = " << time_linear << " сек\n";
+        std::cout << "Бинарный поиск: индекс = " << index_binary 
+                  << ", время = " << time_binary << " сек\n";
+                double max_time = std::max(time_linear, time_binary);
+        std::cout << "\nВизуализация времени:\n";
+        draw_bar("Линейный поиск ", time_linear, max_time);
+        draw_bar("Бинарный поиск ", time_binary, max_time);
+        
+        if (time_binary > 0) {
+            double ratio = time_linear / time_binary;
+            std::cout << "Бинарный поиск быстрее в " << ratio << " раз!\n";
+        }
+        std::cout << "\n";
+    }
     return 0;
 }
