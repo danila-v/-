@@ -1,87 +1,57 @@
 #include <iostream>
 #include <vector>
-#include <random>
+#include <cstdlib>
+#include <ctime>
 #include <chrono>
-#include <algorithm>
 
-// Функция ручного поиска минимального элемента
-int findMinManual(const std::vector<int>& arr) {
-    if (arr.empty()) return -1;
-    
-    int min_val = arr[0];
-    for (size_t i = 1; i < arr.size(); i++) {
-        if (arr[i] < min_val) {
-            min_val = arr[i];
-        }
-    }
-    return min_val;
-}
-
-// Функция поиска минимального элемента с помощью std::min_element
-int findMinBuiltIn(const std::vector<int>& arr) {
-    if (arr.empty()) return -1;
-    return *std::min_element(arr.begin(), arr.end());
-}
-
-// Функция генерации случайного списка
-std::vector<int> generateRandomArray(int size) {
-    std::vector<int> arr(size);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(1, 1000000);
-    
-    for (int i = 0; i < size; i++) {
-        arr[i] = dis(gen);
+std::vector<int> generate_random_list(int n, int min_val = 0, int max_val = 1000) {
+    std::vector<int> arr(n);
+    for (int i = 0; i < n; ++i) {
+        arr[i] = min_val + rand() % (max_val - min_val + 1);
     }
     return arr;
 }
 
-// Функция проверки корректности результатов
-bool checkResults(int manual_result, int builtin_result) {
-    return manual_result == builtin_result;
-}
-
 int main() {
-    // Размеры списков для тестирования
-    std::vector<int> sizes = {1000, 10000, 100000, 1000000};
+    srand(static_cast<unsigned int>(time(nullptr)));
+    std::vector<int> sizes = {1000, 10000, 100000};
     
-    std::cout << "Сравнение поиска минимального элемента\n";
-    std::cout << "======================================\n\n";
-    
-    for (int size : sizes) {
-        // Генерация случайного списка
-        std::vector<int> arr = generateRandomArray(size);
+    for (int n : sizes) {
+        std::vector<int> arr = generate_random_list(n);
+        int sum_regular = 0;
+        int sum_prefix = 0;
         
-        // Тестирование ручного метода
-        auto start = std::chrono::high_resolution_clock::now();
-        int manual_min = findMinManual(arr);
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> manual_time = end - start;
+        std::cout << "=== Размер массива: " << n << " ===\n";
         
-        // Тестирование встроенного метода
-        start = std::chrono::high_resolution_clock::now();
-        int builtin_min = findMinBuiltIn(arr);
-        end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> builtin_time = end - start;
+        auto start_regular = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < n; ++i) {
+            sum_regular += arr[i];
+        }
+        auto end_regular = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> time_regular = end_regular - start_regular;
         
-        // Проверка корректности
-        bool correct = checkResults(manual_min, builtin_min);
+        auto start_prefix = std::chrono::high_resolution_clock::now();
+        std::vector<int> prefix(n + 1, 0);
+        for (int i = 0; i < n; ++i) {
+            prefix[i + 1] = prefix[i] + arr[i];
+        }
+        sum_prefix = prefix[n];
+        auto end_prefix = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> time_prefix = end_prefix - start_prefix;
         
-        // Вывод результатов
-        std::cout << "Размер списка: " << size << std::endl;
-        std::cout << "  Ручной поиск:" << std::endl;
-        std::cout << "    Минимальный элемент: " << manual_min << std::endl;
-        std::cout << "    Время выполнения: " << manual_time.count() << " сек" << std::endl;
-        std::cout << "    Сложность: O(n) - линейная" << std::endl;
-        std::cout << "  Встроенная функция min_element:" << std::endl;
-        std::cout << "    Минимальный элемент: " << builtin_min << std::endl;
-        std::cout << "    Время выполнения: " << builtin_time.count() << " сек" << std::endl;
-        std::cout << "    Сложность: O(n) - линейная" << std::endl;
-        std::cout << "  Корректность результатов: " << (correct ? "✓" : "✗") << std::endl;
-        std::cout << "  Отношение времен (ручной/встроенный): " 
-                  << manual_time.count() / builtin_time.count() << "x" << std::endl;
-        std::cout << std::endl;
+        std::cout << "Обычный цикл: сумма = " << sum_regular 
+                  << ", время = " << time_regular.count() << " сек\n";
+        std::cout << "Префиксные суммы: сумма = " << sum_prefix 
+                  << ", время = " << time_prefix.count() << " сек\n";
+        
+        if (time_regular.count() < time_prefix.count()) {
+            std::cout << "Обычный цикл быстрее в " 
+                      << time_prefix.count() / time_regular.count() << " раз\n";
+        } else {
+            std::cout << "Префиксные суммы быстрее в " 
+                      << time_regular.count() / time_prefix.count() << " раз\n";
+        }
+        std::cout << "---------------------\n";
     }
-    
     return 0;
 }
