@@ -1,71 +1,49 @@
 #include <iostream>
 #include <vector>
-#include <random>
-#include <chrono>
+#include <cstdlib> 
+#include <ctime>   
+#include <chrono>  
 
-// Функция пузырьковой сортировки
-void bubbleSort(std::vector<int>& arr) {
-    int n = arr.size();
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
+void bubble_sort(std::vector<int>& arr) {
+    size_t n = arr.size();
+    for (size_t i = 0; i < n - 1; ++i) {
+        for (size_t j = 0; j < n - i - 1; ++j) {
             if (arr[j] > arr[j + 1]) {
-                std::swap(arr[j], arr[j + 1]);
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
             }
         }
     }
 }
 
-// Функция генерации случайного списка
-std::vector<int> generateRandomArray(int size) {
-    std::vector<int> arr(size);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(1, 100000);
-    
-    for (int i = 0; i < size; i++) {
-        arr[i] = dis(gen);
+std::vector<int> generate_random_list(int n, int min_val = 0, int max_val = 1000) {
+    std::vector<int> arr(n);
+    for (int i = 0; i < n; ++i) {
+        arr[i] = min_val + rand() % (max_val - min_val + 1);
     }
     return arr;
 }
 
-// Функция для проверки отсортированности
-bool isSorted(const std::vector<int>& arr) {
-    for (size_t i = 0; i < arr.size() - 1; i++) {
-        if (arr[i] > arr[i + 1]) {
-            return false;
-        }
-    }
-    return true;
-}
-
 int main() {
-    // Размеры списков для тестирования
-    std::vector<int> sizes = {1000, 5000, 10000};
+    srand(static_cast<unsigned int>(time(nullptr))); 
+
+    std::vector<int> sizes = {100, 1000, 10000};
     
-    std::cout << "Тестирование пузырьковой сортировки\n";
-    std::cout << "===================================\n\n";
-    
-    for (int size : sizes) {
-        // Генерация случайного списка
-        std::vector<int> arr = generateRandomArray(size);
-        
-        // Замер времени выполнения
+    for (int n : sizes) {
+        std::vector<int> arr = generate_random_list(n);
+
         auto start = std::chrono::high_resolution_clock::now();
-        bubbleSort(arr);
+        bubble_sort(arr);
         auto end = std::chrono::high_resolution_clock::now();
-        
-        std::chrono::duration<double> duration = end - start;
-        
-        // Проверка корректности сортировки
-        bool sorted = isSorted(arr);
-        
-        // Вывод результатов
-        std::cout << "Размер списка: " << size << std::endl;
-        std::cout << "  Время выполнения: " << duration.count() << " сек" << std::endl;
-        std::cout << "  Корректность сортировки: " << (sorted ? "✓" : "✗") << std::endl;
-        std::cout << "  Сложность: O(n²) - квадратичная" << std::endl;
-        std::cout << std::endl;
+
+        std::chrono::duration<double> elapsed = end - start;
+
+        std::cout << "Размер массива: " << n << "\n";
+        std::cout << "Время сортировки: " << elapsed.count() << " секунд\n";
+        std::cout << "Сложность алгоритма: O(n^2)\n";
+        std::cout << "----------------\n";
     }
-    
+
     return 0;
 }
